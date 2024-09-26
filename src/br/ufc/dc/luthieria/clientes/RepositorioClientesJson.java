@@ -48,8 +48,16 @@ public class RepositorioClientesJson implements IRepositorioClientes{
 	public Cliente[] listar() {
 		return clientes.toArray(new Cliente[0]);
 	} 
-	
 
+ 
+    public String[] listarEmails() {
+        String[] emails = new String[clientes.size()];
+        for (int i = 0; i < clientes.size(); i++) {
+            emails[i] = clientes.get(i).getEmail(); // Obtém o e-mail de cada cliente
+        }
+        return emails;
+    }
+    
 	@Override
 	public void alterarNome(Cliente cliente, String novoNome) {
 	    // Verifica se o cliente está na lista

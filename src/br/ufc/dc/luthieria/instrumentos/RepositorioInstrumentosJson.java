@@ -49,6 +49,14 @@ public class RepositorioInstrumentosJson implements IRepositorioInstrumentos{
 		return instrumentos.toArray(new InstrumentoAbstrato[0]);
 	} 
 	
+    public String[] listarCodigos() {
+        String[] codigos = new String[instrumentos.size()];
+        for (int i = 0; i < instrumentos.size(); i++) {
+            codigos[i] = instrumentos.get(i).getCodigo(); // Obtém o código de cada instrumento
+        }
+        return codigos;
+    }
+	
     private void carregarInstrumentos() {
     	File arquivo = new File(caminhoArquivo);
     	

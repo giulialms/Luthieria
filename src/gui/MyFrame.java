@@ -303,8 +303,8 @@ public class MyFrame extends JFrame implements ActionListener {
         inputButton.addActionListener(e -> {
             JPanel inputPanel = new JPanel(new GridLayout(6, 2));
             JTextField idField = new JTextField();
-            JComboBox<Cliente> clienteComboBox = new JComboBox<>(repositorioClientes.listar());
-            JComboBox<InstrumentoAbstrato> instrumentoComboBox = new JComboBox<>(repositorioInstrumentos.listar());
+            JComboBox<String> clienteComboBox = new JComboBox<>(repositorioClientes.listarEmails());
+            JComboBox<String> instrumentoComboBox = new JComboBox<>(repositorioInstrumentos.listarCodigos());
             JTextField descricaoServicoField = new JTextField();
             JTextField dataEntregaField = new JTextField();
             JTextField materialField = new JTextField();
@@ -335,13 +335,13 @@ public class MyFrame extends JFrame implements ActionListener {
                     if (dataEntregaField.getText().trim().isEmpty()) {
                         throw new IllegalArgumentException("A data de entrega não pode estar vazia.");
                     }
-                    if (materialField.getText().trim().isEmpty()) {
-                        throw new IllegalArgumentException("O material não pode estar vazio.");
-                    }
+
 
                     int id = Integer.parseInt(idField.getText().trim());
-                    Cliente cliente = (Cliente) clienteComboBox.getSelectedItem();
-                    InstrumentoAbstrato instrumento = (InstrumentoAbstrato) instrumentoComboBox.getSelectedItem();
+                    String selectedEmail = (String) clienteComboBox.getSelectedItem();
+                    Cliente cliente = repositorioClientes.buscarPorEmail(selectedEmail);
+                    String selectedCodigo = (String) instrumentoComboBox.getSelectedItem();
+                    InstrumentoAbstrato instrumento = repositorioInstrumentos.buscarPorId(selectedCodigo);
                     String descricaoServico = descricaoServicoField.getText().trim();
                     String dataEntrega = dataEntregaField.getText().trim();
                     String material = materialField.getText().trim();
