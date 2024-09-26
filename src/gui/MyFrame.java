@@ -131,19 +131,16 @@ public class MyFrame extends JFrame implements ActionListener {
     private JPanel createInstrumentPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 100, 20));
-        //JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 20, 20));
         JLabel label = new JLabel("Instrumentos Menu", SwingConstants.CENTER);
         label.setFont(new Font("Arial", Font.BOLD, 24));
         
         JButton inputButton = new JButton("Inserir Instrumento");
-        //botão começa
         inputButton.addActionListener(e -> {
             JPanel inputPanel = new JPanel(new GridLayout(6, 2));
             JTextField codigoField = new JTextField();
             JTextField marcaField = new JTextField();
             JTextField nomeField = new JTextField();
             JComboBox<EstadoInstrumento> estadoComboBox = new JComboBox<>(EstadoInstrumento.values());
-           
 
             inputPanel.add(new JLabel("Código:"));
             inputPanel.add(codigoField);
@@ -154,82 +151,73 @@ public class MyFrame extends JFrame implements ActionListener {
             inputPanel.add(new JLabel("Estado:"));
             inputPanel.add(estadoComboBox);
             
-     
-
             int result = JOptionPane.showConfirmDialog(panel, inputPanel, "Digite os Dados da Ordem", JOptionPane.OK_CANCEL_OPTION);
             if (result == JOptionPane.OK_OPTION) {
                 try {
-                	String nome = nomeField.getText().trim();
-                	String marca = marcaField.getText().trim();
+                    String nome = nomeField.getText().trim();
+                    String marca = marcaField.getText().trim();
                     String codigo = codigoField.getText().trim();
                     EstadoInstrumento estado = (EstadoInstrumento) estadoComboBox.getSelectedItem();
-     
-                    
-                    if(repositorioInstrumentos.buscarPorId(codigo) != null) {
-                    	throw new IllegalArgumentException();
+
+                    // Verificações para campos vazios
+                    if (codigo.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Código não pode estar vazio!");
+                    }
+                    if (marca.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Marca não pode estar vazio!");
+                    }
+                    if (nome.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Nome não pode estar vazio!");
+                    }
+
+                    if (repositorioInstrumentos.buscarPorId(codigo) != null) {
+                        throw new IllegalArgumentException("Já existe um instrumento cadastrado com esse código!");
                     }
                     
-                    
                     InstrumentoAbstrato instrumentoNovo = new InstrumentoAbstrato(nome, marca, codigo, estado);
-                    
-                    //salvando no arquivo
                     repositorioInstrumentos.inserir(instrumentoNovo);
                     
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(panel, "Por favor, insira um código válido.", "Erro", JOptionPane.ERROR_MESSAGE);
-                }catch (IllegalArgumentException ex) {
-                    
-                    JOptionPane.showMessageDialog(panel, "Já existe um instrumento cadastrado com esse código!", "Erro", JOptionPane.ERROR_MESSAGE);
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 System.out.println("Operação cancelada.");
             }
         });
-        //botão termina
         
-        //botão começa
         JButton backButton = new JButton("Voltar");
         backButton.addActionListener(e -> showMenu("Menu1"));
-        //botão termina
 
         JButton deleteButton = new JButton("Remover Instrumento");
         deleteButton.addActionListener(e -> {
-        JPanel inputPanel = new JPanel(new GridLayout(6, 2));
-        JTextField codigoField = new JTextField();
-        
-        inputPanel.add(new JLabel("Código:"));
-        inputPanel.add(codigoField);
-        
-        int result = JOptionPane.showConfirmDialog(panel, inputPanel, "Digite o instrumento que deseja excluir", JOptionPane.OK_CANCEL_OPTION);
-        if (result == JOptionPane.OK_OPTION) {
-            try {
-            	
-                String codigo = codigoField.getText().trim();
-               
-                
-               // InstrumentoAbstrato instrumentoDeletar = repositorioInstrumentos.buscarPorId(codigo);
- 
-                
-                if(repositorioInstrumentos.buscarPorId(codigo) == null) {
-                	throw new IllegalArgumentException();
+            JPanel inputPanel = new JPanel(new GridLayout(6, 2));
+            JTextField codigoField = new JTextField();
+            
+            inputPanel.add(new JLabel("Código:"));
+            inputPanel.add(codigoField);
+            
+            int result = JOptionPane.showConfirmDialog(panel, inputPanel, "Digite o instrumento que deseja excluir", JOptionPane.OK_CANCEL_OPTION);
+            if (result == JOptionPane.OK_OPTION) {
+                try {
+                    String codigo = codigoField.getText().trim();
+                    
+                    if (codigo.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Código não pode estar vazio!");
+                    }
+
+                    if (repositorioInstrumentos.buscarPorId(codigo) == null) {
+                        throw new IllegalArgumentException("Não existe um instrumento cadastrado com esse código!");
+                    }
+                    
+                    repositorioInstrumentos.excluir(codigo);
+                    
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
-                
-                
-                //excluindo do arquivo
-                repositorioInstrumentos.excluir(codigo);
-                
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(panel, "Por favor, insira um código válido.", "Erro", JOptionPane.ERROR_MESSAGE);
-            }catch (IllegalArgumentException ex) {
-                
-                JOptionPane.showMessageDialog(panel, "Não existe um instrumento cadastrado com esse código!", "Erro", JOptionPane.ERROR_MESSAGE);
+            } else {
+                System.out.println("Operação cancelada.");
             }
-        } else {
-            System.out.println("Operação cancelada.");
-        }
-        
         });
-        
 
         JButton alterarNomeButton = new JButton("Alterar nome");
         alterarNomeButton.addActionListener(e -> {
@@ -242,9 +230,13 @@ public class MyFrame extends JFrame implements ActionListener {
             int result = JOptionPane.showConfirmDialog(null, inputPanel, "Buscar Instrumento", JOptionPane.OK_CANCEL_OPTION);
             
             if (result == JOptionPane.OK_OPTION) {
-                String codigo = codigoField.getText();
+                String codigo = codigoField.getText().trim();
 
                 try {
+                    if (codigo.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Código não pode estar vazio!");
+                    }
+
                     InstrumentoAbstrato instrumento = repositorioInstrumentos.buscarPorId(codigo);
                     if (instrumento != null) {
                         JTextField nomeField = new JTextField();
@@ -254,7 +246,11 @@ public class MyFrame extends JFrame implements ActionListener {
 
                         int nomeResult = JOptionPane.showConfirmDialog(null, nomePanel, "Alterar Nome do Instrumento", JOptionPane.OK_CANCEL_OPTION);
                         if (nomeResult == JOptionPane.OK_OPTION) {
-                            String novoNome = nomeField.getText();
+                            String novoNome = nomeField.getText().trim();
+                            
+                            if (novoNome.isEmpty()) {
+                                throw new IllegalArgumentException("O campo Novo Nome não pode estar vazio!");
+                            }
                             
                             OrdemServico[] ordensArray = repositorioOrdens.listar();
                             
@@ -271,7 +267,7 @@ public class MyFrame extends JFrame implements ActionListener {
                     } else {
                         throw new INEException("Instrumento com código " + codigo + " não encontrado.");
                     }
-                } catch (INEException ex) {
+                } catch (INEException | IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, "Ocorreu um erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
@@ -279,14 +275,11 @@ public class MyFrame extends JFrame implements ActionListener {
             }
         });
 
-
-        
         // Definindo tamanhos preferidos dos botões
         inputButton.setPreferredSize(new Dimension(200, 100));
         backButton.setPreferredSize(new Dimension(200, 100));
         deleteButton.setPreferredSize(new Dimension(200, 100));
         alterarNomeButton.setPreferredSize(new Dimension(200, 100));
-        //clientesButton.setPreferredSize(new Dimension(200, 200));
         
         buttonPanel.add(inputButton);
         buttonPanel.add(backButton);
@@ -297,67 +290,21 @@ public class MyFrame extends JFrame implements ActionListener {
         panel.add(buttonPanel, BorderLayout.CENTER); 
         
         return panel;
-    	
-    	
-    	
-    	
-    	
-       /* JPanel panel = new JPanel(new BorderLayout());
-        JLabel label = new JLabel("Instrumentos Menu", SwingConstants.CENTER);
-        label.setFont(new Font("Arial", Font.BOLD, 24));
-        
-        backButton = new JButton("Voltar");
-        backButton.addActionListener(e -> showMenu("Menu1"));
-        
-        panel.add(label, BorderLayout.NORTH);
-        panel.add(backButton, BorderLayout.CENTER);
-        return panel;*/
     }
+
     
     private JPanel createOrdensPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 100, 20));
-        //JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 20, 20));
         JLabel label = new JLabel("Ordens Menu", SwingConstants.CENTER);
         label.setFont(new Font("Arial", Font.BOLD, 24));
-        
+
         JButton inputButton = new JButton("Inserir Ordem");
         inputButton.addActionListener(e -> {
             JPanel inputPanel = new JPanel(new GridLayout(6, 2));
             JTextField idField = new JTextField();
             JComboBox<Cliente> clienteComboBox = new JComboBox<>(repositorioClientes.listar());
-            /*clienteComboBox.setRenderer(new ListCellRenderer<Cliente>() {
-                @Override
-                public Component getListCellRendererComponent(JList<? extends Cliente> list, Cliente value, int index, boolean isSelected, boolean cellHasFocus) {
-                    JLabel label = new JLabel(value.getNome());
-                    if (isSelected) {
-                        label.setBackground(list.getSelectionBackground());
-                        label.setForeground(list.getSelectionForeground());
-                    } else {
-                        label.setBackground(list.getBackground());
-                        label.setForeground(list.getForeground());
-                    }
-                    label.setOpaque(true);
-                    return label;
-                }
-            });*/
-            JComboBox<InstrumentoAbstrato> instrumentoComboBox = new JComboBox<>(repositorioInstrumentos.listar());/*
-            instrumentoComboBox.setRenderer(new ListCellRenderer<InstrumentoAbstrato>() {
-                @Override
-                public Component getListCellRendererComponent(JList<? extends InstrumentoAbstrato> list, InstrumentoAbstrato value, int index, boolean isSelected, boolean cellHasFocus) {
-                    JLabel label = new JLabel(value.getNome());
-                    if (isSelected) {
-                        label.setBackground(list.getSelectionBackground());
-                        label.setForeground(list.getSelectionForeground());
-                    } else {
-                        label.setBackground(list.getBackground());
-                        label.setForeground(list.getForeground());
-                    }
-                    label.setOpaque(true);
-                    return label;
-                }
-            });
-*/
+            JComboBox<InstrumentoAbstrato> instrumentoComboBox = new JComboBox<>(repositorioInstrumentos.listar());
             JTextField descricaoServicoField = new JTextField();
             JTextField dataEntregaField = new JTextField();
             JTextField materialField = new JTextField();
@@ -378,43 +325,40 @@ public class MyFrame extends JFrame implements ActionListener {
             int result = JOptionPane.showConfirmDialog(panel, inputPanel, "Digite os Dados da Ordem", JOptionPane.OK_CANCEL_OPTION);
             if (result == JOptionPane.OK_OPTION) {
                 try {
+                    // Valida os campos
+                    if (idField.getText().trim().isEmpty()) {
+                        throw new IllegalArgumentException("O ID não pode estar vazio.");
+                    }
+                    if (descricaoServicoField.getText().trim().isEmpty()) {
+                        throw new IllegalArgumentException("A descrição do serviço não pode estar vazia.");
+                    }
+                    if (dataEntregaField.getText().trim().isEmpty()) {
+                        throw new IllegalArgumentException("A data de entrega não pode estar vazia.");
+                    }
+                    if (materialField.getText().trim().isEmpty()) {
+                        throw new IllegalArgumentException("O material não pode estar vazio.");
+                    }
+
                     int id = Integer.parseInt(idField.getText().trim());
                     Cliente cliente = (Cliente) clienteComboBox.getSelectedItem();
                     InstrumentoAbstrato instrumento = (InstrumentoAbstrato) instrumentoComboBox.getSelectedItem();
                     String descricaoServico = descricaoServicoField.getText().trim();
                     String dataEntrega = dataEntregaField.getText().trim();
                     String material = materialField.getText().trim();
-                    
-                    if(repositorioOrdens.buscarPorId(id) != null) {
-                    	throw new IllegalArgumentException();
+
+                    if (repositorioOrdens.buscarPorId(id) != null) {
+                        throw new IllegalArgumentException("Já existe uma ordem cadastrada com esse ID!");
                     }
-/*
-                    String nome = "wildnei nome";
-                    String email = "wildnei email";
-                    String telefone = "wildnei telefone";
-                    String endereco = "wildnei end";
-                    Cliente cliente = new Cliente(nome, email, telefone, endereco);
-                    
-                    String nomeinstrumento = "wildnei inst";
-                    String marca = "wildnei marca";
-                    String codigo = "wildnei cod";
-                    
-                    
-                    
-                    InstrumentoAbstrato instrumento = new InstrumentoAbstrato(nomeinstrumento, marca, codigo, EstadoInstrumento.RECEBIDO);
-                    
-                    // Criando uma nova instância de OrdemServico
-                    OrdemServico ordemNova = new OrdemServico(id, cliente, instrumento, descricaoServico, dataEntrega, material);*/
+
                     OrdemServico ordemNova = new OrdemServico(id, cliente, instrumento, descricaoServico, dataEntrega, material);
-                    
-                    //salvando no arquivo
+
+                    // salvando no arquivo
                     repositorioOrdens.inserir(ordemNova);
-                    
+
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(panel, "Por favor, insira um ID válido.", "Erro", JOptionPane.ERROR_MESSAGE);
-                }catch (IllegalArgumentException ex) {
-                    
-                    JOptionPane.showMessageDialog(panel, "Já existe uma ordem cadastrada com esse ID!", "Erro", JOptionPane.ERROR_MESSAGE);
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 System.out.println("Operação cancelada.");
@@ -423,47 +367,44 @@ public class MyFrame extends JFrame implements ActionListener {
 
         JButton backButton = new JButton("Voltar");
         backButton.addActionListener(e -> showMenu("Menu1"));
-        
 
         JButton deleteButton = new JButton("Remover Ordem");
         deleteButton.addActionListener(e -> {
-        JPanel inputPanel = new JPanel(new GridLayout(6, 2));
-        JTextField idField = new JTextField();
-        
-        inputPanel.add(new JLabel("Código:"));
-        inputPanel.add(idField);
-        
-        int result = JOptionPane.showConfirmDialog(panel, inputPanel, "Digite a ordem que deseja excluir", JOptionPane.OK_CANCEL_OPTION);
-        if (result == JOptionPane.OK_OPTION) {
-            try {
-            	
-            	int id = Integer.parseInt(idField.getText().trim());
- 
-                
-                if(repositorioOrdens.buscarPorId(id) == null) {
-                	throw new IllegalArgumentException();
+            JPanel inputPanel = new JPanel(new GridLayout(6, 2));
+            JTextField idField = new JTextField();
+
+            inputPanel.add(new JLabel("ID:"));
+            inputPanel.add(idField);
+
+            int result = JOptionPane.showConfirmDialog(panel, inputPanel, "Digite a ordem que deseja excluir", JOptionPane.OK_CANCEL_OPTION);
+            if (result == JOptionPane.OK_OPTION) {
+                try {
+                    if (idField.getText().trim().isEmpty()) {
+                        throw new IllegalArgumentException("O ID não pode estar vazio.");
+                    }
+
+                    int id = Integer.parseInt(idField.getText().trim());
+
+                    if (repositorioOrdens.buscarPorId(id) == null) {
+                        throw new IllegalArgumentException("Não existe uma ordem cadastrada com esse ID!");
+                    }
+
+                    // excluindo do arquivo
+                    repositorioOrdens.excluir(id);
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(panel, "Por favor, insira um ID válido.", "Erro", JOptionPane.ERROR_MESSAGE);
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
-                
-                
-                //excluindo do arquivo
-                repositorioOrdens.excluir(id);
-                
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(panel, "Por favor, insira um código válido.", "Erro", JOptionPane.ERROR_MESSAGE);
-            }catch (IllegalArgumentException ex) {
-                
-                JOptionPane.showMessageDialog(panel, "Não existe um instrumento cadastrado com esse código!", "Erro", JOptionPane.ERROR_MESSAGE);
+            } else {
+                System.out.println("Operação cancelada.");
             }
-        } else {
-            System.out.println("Operação cancelada.");
-        }
-        
         });
-        
+
         JButton atualizarButton = new JButton("Atualizar Ordem");
         atualizarButton.addActionListener(e -> {
             JPanel inputPanel = new JPanel(new GridLayout(6, 2));
-
             JTextField idField = new JTextField();
             inputPanel.add(new JLabel("ID da ordem:"));
             inputPanel.add(idField);
@@ -472,6 +413,10 @@ public class MyFrame extends JFrame implements ActionListener {
 
             if (result == JOptionPane.OK_OPTION) {
                 try {
+                    if (idField.getText().trim().isEmpty()) {
+                        throw new IllegalArgumentException("O ID não pode estar vazio.");
+                    }
+
                     int id = Integer.parseInt(idField.getText().trim());
 
                     OrdemServico ordemEncontrada = repositorioOrdens.buscarPorId(id);
@@ -509,46 +454,33 @@ public class MyFrame extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(null, "ID inválido! Por favor, insira um número válido.", "Erro", JOptionPane.ERROR_MESSAGE);
                 } catch (ONEException | INEException ex) {
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(null, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
 
-
-        
         inputButton.setPreferredSize(new Dimension(200, 100));
         backButton.setPreferredSize(new Dimension(200, 100));
         deleteButton.setPreferredSize(new Dimension(200, 100));
         atualizarButton.setPreferredSize(new Dimension(200, 100));
-        //clientesButton.setPreferredSize(new Dimension(200, 200));
-        
+
         buttonPanel.add(inputButton);
         buttonPanel.add(backButton);
         buttonPanel.add(deleteButton);
         buttonPanel.add(atualizarButton);
-        
+
         panel.add(label, BorderLayout.NORTH);
-        panel.add(buttonPanel, BorderLayout.CENTER); 
-        
+        panel.add(buttonPanel, BorderLayout.CENTER);
+
         return panel;
     }
 
+
     
     private JPanel createClientesPanel() {
-    	/*
-        JPanel panel = new JPanel(new BorderLayout());
-        JLabel label = new JLabel("Clientes Menu", SwingConstants.CENTER);
-        label.setFont(new Font("Arial", Font.BOLD, 24));
-        
-        backButton = new JButton("Voltar");
-        backButton.addActionListener(e -> showMenu("Menu1"));
-        
-        panel.add(label, BorderLayout.NORTH);
-        panel.add(backButton, BorderLayout.CENTER);
-        return panel;
-        */
         JPanel panel = new JPanel(new BorderLayout());
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 100, 20));
-    	//JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 20, 20));
         JLabel label = new JLabel("Clientes Menu", SwingConstants.CENTER);
         label.setFont(new Font("Arial", Font.BOLD, 24));
         
@@ -576,20 +508,33 @@ public class MyFrame extends JFrame implements ActionListener {
                     String email = emailField.getText().trim();
                     String telefone = telefoneField.getText().trim();
                     String endereco = enderecoField.getText().trim();
-                    
-                    if(repositorioClientes.buscarPorEmail(email) != null) {
-                    	throw new IllegalArgumentException();
+
+                    // Verificações para campos vazios
+                    if (nome.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Nome não pode estar vazio!");
                     }
-                    
+                    if (email.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Email não pode estar vazio!");
+                    }
+                    if (telefone.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Telefone não pode estar vazio!");
+                    }
+                    if (endereco.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Endereço não pode estar vazio!");
+                    }
+
+                    if (repositorioClientes.buscarPorEmail(email) != null) {
+                        throw new IllegalArgumentException("Já existe um cliente cadastrado com esse email!");
+                    }
+
                     // Criando uma nova instância de Cliente
                     Cliente clienteNovo = new Cliente(nome, email, telefone, endereco);
                     
-                    //salvando no arquivo
+                    // Salvando no arquivo
                     repositorioClientes.inserir(clienteNovo);
                     
                 } catch (IllegalArgumentException ex) {
-                    
-                    JOptionPane.showMessageDialog(panel, "Já existe um cliente cadastrado com esse email!", "Erro", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 System.out.println("Operação cancelada.");
@@ -598,111 +543,101 @@ public class MyFrame extends JFrame implements ActionListener {
 
         JButton backButton = new JButton("Voltar");
         backButton.addActionListener(e -> showMenu("Menu1"));
-        
 
         JButton deleteButton = new JButton("Remover Cliente");
         deleteButton.addActionListener(e -> {
-        JPanel inputPanel = new JPanel(new GridLayout(6, 2));
-        JTextField emailField = new JTextField();
-        
-        inputPanel.add(new JLabel("Email:"));
-        inputPanel.add(emailField);
-        
-        int result = JOptionPane.showConfirmDialog(panel, inputPanel, "Digite o cliente que deseja excluir", JOptionPane.OK_CANCEL_OPTION);
-        if (result == JOptionPane.OK_OPTION) {
-            try {
-            	
-            	String email = emailField.getText().trim();
- 
-                
-                if(repositorioClientes.buscarPorEmail(email) == null) {
-                	throw new IllegalArgumentException();
+            JPanel inputPanel = new JPanel(new GridLayout(6, 2));
+            JTextField emailField = new JTextField();
+            
+            inputPanel.add(new JLabel("Email:"));
+            inputPanel.add(emailField);
+            
+            int result = JOptionPane.showConfirmDialog(panel, inputPanel, "Digite o cliente que deseja excluir", JOptionPane.OK_CANCEL_OPTION);
+            if (result == JOptionPane.OK_OPTION) {
+                try {
+                    String email = emailField.getText().trim();
+
+                    if (email.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Email não pode estar vazio!");
+                    }
+
+                    if (repositorioClientes.buscarPorEmail(email) == null) {
+                        throw new IllegalArgumentException("Não existe um cliente cadastrado com esse e-mail!");
+                    }
+                    
+                    // Excluindo do arquivo
+                    repositorioClientes.excluir(email);
+                    
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
-                
-                
-                //excluindo do arquivo
-                repositorioClientes.excluir(email);
-                
-            }catch (IllegalArgumentException ex) {
-                
-                JOptionPane.showMessageDialog(panel, "Não existe um cliente cadastrado com esse e-mail!", "Erro", JOptionPane.ERROR_MESSAGE);
+            } else {
+                System.out.println("Operação cancelada.");
             }
-        } else {
-            System.out.println("Operação cancelada.");
-        }
-        
         });
         
         JButton alterarNomeButton = new JButton("Alterar nome");
         alterarNomeButton.addActionListener(e -> {
-            // Painel para inserir o código do instrumento
             JPanel inputPanel = new JPanel(new GridLayout(2, 2));
             JTextField emailField = new JTextField();
 
             inputPanel.add(new JLabel("Email:"));
             inputPanel.add(emailField);
 
-            // Caixa de diálogo para inserir o código
             int result = JOptionPane.showConfirmDialog(null, inputPanel, "Buscar Cliente", JOptionPane.OK_CANCEL_OPTION);
             
             if (result == JOptionPane.OK_OPTION) {
-                String email = emailField.getText();
+                String email = emailField.getText().trim();
 
                 try {
+                    if (email.isEmpty()) {
+                        throw new IllegalArgumentException("O campo Email não pode estar vazio!");
+                    }
+
                     Cliente cliente = repositorioClientes.buscarPorEmail(email);
-
                     if (cliente != null) {
-                    JTextField nomeField = new JTextField();
-                    JPanel nomePanel = new JPanel(new GridLayout(2, 2));
-                    nomePanel.add(new JLabel("Novo Nome:"));
-                    nomePanel.add(nomeField);
+                        JTextField nomeField = new JTextField();
+                        JPanel nomePanel = new JPanel(new GridLayout(2, 2));
+                        nomePanel.add(new JLabel("Novo Nome:"));
+                        nomePanel.add(nomeField);
 
-                    // Nova caixa de diálogo para o novo nome
-                    int nomeResult = JOptionPane.showConfirmDialog(null, nomePanel, "Alterar Nome do Cliente", JOptionPane.OK_CANCEL_OPTION);
+                        int nomeResult = JOptionPane.showConfirmDialog(null, nomePanel, "Alterar Nome do Cliente", JOptionPane.OK_CANCEL_OPTION);
 
-                    if (nomeResult == JOptionPane.OK_OPTION) {
-                        String novoNome = nomeField.getText();
-                        
-                        OrdemServico[] ordensArray = repositorioOrdens.listar();
-                        
-                        for (OrdemServico ordem : ordensArray) {
-                            if (ordem.getCliente() != null && ordem.getCliente().getEmail().equals(cliente.getEmail())) {
-                                ordem.getCliente().setNome(novoNome);
+                        if (nomeResult == JOptionPane.OK_OPTION) {
+                            String novoNome = nomeField.getText().trim();
+                            
+                            if (novoNome.isEmpty()) {
+                                throw new IllegalArgumentException("O campo Novo Nome não pode estar vazio!");
                             }
+                            
+                            OrdemServico[] ordensArray = repositorioOrdens.listar();
+                            
+                            for (OrdemServico ordem : ordensArray) {
+                                if (ordem.getCliente() != null && ordem.getCliente().getEmail().equals(cliente.getEmail())) {
+                                    ordem.getCliente().setNome(novoNome);
+                                }
+                            }
+                            repositorioOrdens.salvarOrdens(); 
+                            repositorioClientes.alterarNome(cliente, novoNome);
+
+                            JOptionPane.showMessageDialog(null, "Nome alterado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
                         }
-                        repositorioOrdens.salvarOrdens(); 
-
-                        repositorioClientes.alterarNome(cliente, novoNome);
-
-                        JOptionPane.showMessageDialog(null, "Nome alterado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        throw new CNEException("Cliente com e-mail " + email + " não encontrado.");
                     }
-                    }else {
-                    	throw new CNEException("Cliente com e-mail " + email + " não encontrado.");
-                    }
-                } catch (CNEException ex) {
+                } catch (CNEException | IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, "Ocorreu um erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-        
+
         // Definindo tamanhos preferidos dos botões
         inputButton.setPreferredSize(new Dimension(200, 100));
         backButton.setPreferredSize(new Dimension(200, 100));
         deleteButton.setPreferredSize(new Dimension(200, 100));
         alterarNomeButton.setPreferredSize(new Dimension(200, 100));
-        //clientesButton.setPreferredSize(new Dimension(200, 200)); 
-        /*
-        fixedSizePanel.add(inputButton);
-        fixedSizePanel.add(backButton);
-        fixedSizePanel.add(deleteButton);
-
-        buttonPanel.add(fixedSizePanel);
-
-        panel.add(label, BorderLayout.NORTH);
-        panel.add(fixedSizePanel, BorderLayout.CENTER);
-        */
 
         buttonPanel.add(inputButton);
         buttonPanel.add(backButton);
@@ -713,20 +648,18 @@ public class MyFrame extends JFrame implements ActionListener {
         panel.add(buttonPanel, BorderLayout.CENTER); 
         
         return panel;
-
-    	
     }
+
     
     private JPanel createNotificacoesPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 100, 20));
-        //JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 20, 20));
         JLabel label = new JLabel("Notificações Menu", SwingConstants.CENTER);
         label.setFont(new Font("Arial", Font.BOLD, 24));
 
         JButton inputButton = new JButton("Gerar Notificação");
         inputButton.addActionListener(e -> {
-            JPanel inputPanel = new JPanel(new GridLayout(6, 2));
+            JPanel inputPanel = new JPanel(new GridLayout(2, 2));
             JTextField idField = new JTextField();
 
             inputPanel.add(new JLabel("ID:"));
@@ -735,25 +668,33 @@ public class MyFrame extends JFrame implements ActionListener {
             int result = JOptionPane.showConfirmDialog(panel, inputPanel, "Digite o ID da Ordem para gerar a notificação", JOptionPane.OK_CANCEL_OPTION);
             if (result == JOptionPane.OK_OPTION) {
                 try {
-                    int id = Integer.parseInt(idField.getText().trim());
+                    String idText = idField.getText().trim();
+                    
+                    // Verificação para campo vazio
+                    if (idText.isEmpty()) {
+                        throw new IllegalArgumentException("O campo ID não pode estar vazio!");
+                    }
+                    
+                    int id = Integer.parseInt(idText);
                     OrdemServico ordemNova = repositorioOrdens.buscarPorId(id);
 
                     if (ordemNova == null) {
-                        throw new IllegalArgumentException();
+                        throw new IllegalArgumentException("Não existe uma ordem cadastrada com esse ID.");
                     }
 
                     Notificacao notificacao = new Notificacao();
                     JOptionPane.showMessageDialog(panel, notificacao.imprimirNotificacao(ordemNova), "Notificação", JOptionPane.INFORMATION_MESSAGE);
 
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(panel, "Por favor, insira um ID válido.", "Erro", JOptionPane.ERROR_MESSAGE);
                 } catch (IllegalArgumentException ex) {
-                	JOptionPane.showMessageDialog(panel, "Não existe uma ordem cadastrada com esse ID.", "Erro", JOptionPane.ERROR_MESSAGE);
-                }catch (Exception ex){
+                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
                     JOptionPane.showMessageDialog(panel, "Ocorreu um erro inesperado: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 System.out.println("Operação cancelada.");
             }
-            
         });
 
         JButton backButton = new JButton("Voltar");
@@ -761,21 +702,16 @@ public class MyFrame extends JFrame implements ActionListener {
 
         inputButton.setPreferredSize(new Dimension(200, 100));
         backButton.setPreferredSize(new Dimension(200, 100));
-        /*
-        fixedSizePanel.add(inputButton);
-        fixedSizePanel.add(backButton);
 
-        buttonPanel.add(fixedSizePanel);
-*/
         buttonPanel.add(inputButton);
         buttonPanel.add(backButton);
 
         panel.add(label, BorderLayout.NORTH);
-       // panel.add(fixedSizePanel, BorderLayout.CENTER);
         panel.add(buttonPanel, BorderLayout.CENTER);
 
         return panel;
     }
+
 
     
     private void showMenu(String menu) {
