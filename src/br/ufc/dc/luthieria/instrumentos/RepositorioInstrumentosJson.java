@@ -69,7 +69,7 @@ public class RepositorioInstrumentosJson implements IRepositorioInstrumentos{
     }
 
 
-    private void salvarInstrumentos() {
+    public void salvarInstrumentos() {
         try (Writer writer = new FileWriter(caminhoArquivo)) {
             gson.toJson(instrumentos, writer);
         } catch (IOException e) {
@@ -79,9 +79,7 @@ public class RepositorioInstrumentosJson implements IRepositorioInstrumentos{
 
     @Override
     public void alterarNome(InstrumentoAbstrato instrumento, String novoNome) {
-                // Alterar o nome do instrumento
                 instrumento.setNome(novoNome);
-                // Salvar as alterações no arquivo
                 salvarInstrumentos();
                 return;
     }

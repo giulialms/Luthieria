@@ -1,4 +1,6 @@
 package gui;
+import java.util.List;
+
 import java.io.File;
 import br.ufc.dc.luthieria.*;
 import br.ufc.dc.luthieria.ordens.*;
@@ -33,9 +35,9 @@ public class MyFrame extends JFrame implements ActionListener {
 
     MyFrame() {
     	
-    	String filePath = "C:\\Users\\giuli\\eclipse-workspace\\BACKUP_LUT\\ordens.json";
-    	String filePath2 = "C:\\Users\\giuli\\eclipse-workspace\\BACKUP_LUT\\instrumentos.json";
-    	String filePath3 = "C:\\Users\\giuli\\eclipse-workspace\\BACKUP_LUT\\clientes.json";
+    	String filePath = "C:\\Users\\giuli\\eclipse-workspace\\LuthieriaLoja\\ordens.json";
+    	String filePath2 = "C:\\Users\\giuli\\eclipse-workspace\\LuthieriaLoja\\instrumentos.json";
+    	String filePath3 = "C:\\Users\\giuli\\eclipse-workspace\\LuthieriaLoja\\clientes.json";
 
         repositorioOrdens = new RepositorioOrdensJson(filePath);
         repositorioInstrumentos = new RepositorioInstrumentosJson(filePath2);
@@ -228,58 +230,56 @@ public class MyFrame extends JFrame implements ActionListener {
         
         });
         
+
         JButton alterarNomeButton = new JButton("Alterar nome");
         alterarNomeButton.addActionListener(e -> {
-            // Painel para inserir o código do instrumento
             JPanel inputPanel = new JPanel(new GridLayout(2, 2));
             JTextField codigoField = new JTextField();
 
             inputPanel.add(new JLabel("Código:"));
             inputPanel.add(codigoField);
 
-            // Caixa de diálogo para inserir o código
             int result = JOptionPane.showConfirmDialog(null, inputPanel, "Buscar Instrumento", JOptionPane.OK_CANCEL_OPTION);
             
             if (result == JOptionPane.OK_OPTION) {
                 String codigo = codigoField.getText();
 
                 try {
-                    // Verifica se existe um instrumento com o código informado
                     InstrumentoAbstrato instrumento = repositorioInstrumentos.buscarPorId(codigo);
-
-                    // Se o instrumento for encontrado, abrir uma nova caixa de diálogo para alterar o nome
                     if (instrumento != null) {
-                    JTextField nomeField = new JTextField();
-                    JPanel nomePanel = new JPanel(new GridLayout(2, 2));
-                    nomePanel.add(new JLabel("Novo Nome:"));
-                    nomePanel.add(nomeField);
+                        JTextField nomeField = new JTextField();
+                        JPanel nomePanel = new JPanel(new GridLayout(2, 2));
+                        nomePanel.add(new JLabel("Novo Nome:"));
+                        nomePanel.add(nomeField);
 
-                    // Nova caixa de diálogo para o novo nome
-                    int nomeResult = JOptionPane.showConfirmDialog(null, nomePanel, "Alterar Nome do Instrumento", JOptionPane.OK_CANCEL_OPTION);
-
-                    if (nomeResult == JOptionPane.OK_OPTION) {
-                        String novoNome = nomeField.getText();
-
-                        // Chama a função para alterar o nome
-                        repositorioInstrumentos.alterarNome(instrumento, novoNome);
-                        
-
-                        // Mensagem de sucesso
-                        JOptionPane.showMessageDialog(null, "Nome alterado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                    }
-                    }else {
-                    	throw new INEException("Instrumento com código " + codigo + " não encontrado.");
+                        int nomeResult = JOptionPane.showConfirmDialog(null, nomePanel, "Alterar Nome do Instrumento", JOptionPane.OK_CANCEL_OPTION);
+                        if (nomeResult == JOptionPane.OK_OPTION) {
+                            String novoNome = nomeField.getText();
+                            
+                            OrdemServico[] ordensArray = repositorioOrdens.listar();
+                            
+                            for (OrdemServico ordem : ordensArray) {
+                                if (ordem.getInstrumento() != null && ordem.getInstrumento().getCodigo().equals(instrumento.getCodigo())) {
+                                    ordem.getInstrumento().setNome(novoNome);
+                                }
+                            }
+                            repositorioOrdens.salvarOrdens(); 
+                            repositorioInstrumentos.alterarNome(instrumento, novoNome);
+                            
+                            JOptionPane.showMessageDialog(null, "Nome alterado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    } else {
+                        throw new INEException("Instrumento com código " + codigo + " não encontrado.");
                     }
                 } catch (INEException ex) {
-                    // Exibe mensagem de erro se o código não for encontrado
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {
-                    // Captura qualquer outra exceção
                     JOptionPane.showMessageDialog(null, "Ocorreu um erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-        
+
+
         
         // Definindo tamanhos preferidos dos botões
         inputButton.setPreferredSize(new Dimension(200, 100));
@@ -459,12 +459,12 @@ public class MyFrame extends JFrame implements ActionListener {
         }
         
         });
+        
         JButton atualizarButton = new JButton("Atualizar Ordem");
         atualizarButton.addActionListener(e -> {
             JPanel inputPanel = new JPanel(new GridLayout(6, 2));
 
             JTextField idField = new JTextField();
-            
             inputPanel.add(new JLabel("ID da ordem:"));
             inputPanel.add(idField);
 
@@ -474,15 +474,12 @@ public class MyFrame extends JFrame implements ActionListener {
                 try {
                     int id = Integer.parseInt(idField.getText().trim());
 
-                    //busca a ordem pelo ID
                     OrdemServico ordemEncontrada = repositorioOrdens.buscarPorId(id);
                     if (ordemEncontrada != null) {
                         String instrumentoCodigo = ordemEncontrada.getInstrumento().getCodigo();
 
-                        //busca o instrumento pelo código
                         InstrumentoAbstrato instrumentoEncontrado = repositorioInstrumentos.buscarPorId(instrumentoCodigo);
                         if (instrumentoEncontrado != null) {
-                            //cria novo painel para selecionar o estado do instrumento
                             JPanel estadoPanel = new JPanel(new GridLayout(6, 2));
                             JComboBox<EstadoInstrumento> estadoComboBox = new JComboBox<>(EstadoInstrumento.values());
                             estadoPanel.add(new JLabel("Estado:"));
@@ -490,13 +487,17 @@ public class MyFrame extends JFrame implements ActionListener {
 
                             int estadoResult = JOptionPane.showConfirmDialog(null, estadoPanel, "Selecionar Estado", JOptionPane.OK_CANCEL_OPTION);
                             if (estadoResult == JOptionPane.OK_OPTION) {
-                            	
                                 EstadoInstrumento estado = (EstadoInstrumento) estadoComboBox.getSelectedItem();
 
-                                //atualiza a ordem com o novo estado
+                                // Atualiza o estado do instrumento
                                 instrumentoEncontrado.setEstado(estado);
+
+                                // Salva a alteração no repositório de instrumentos
+                                repositorioInstrumentos.salvarInstrumentos();
+
+                                // Atualiza a ordem com o novo estado
                                 repositorioOrdens.atualizar(id, instrumentoCodigo, estado);
-                                JOptionPane.showMessageDialog(null, "Ordem atualizada com sucesso!" + estado + instrumentoEncontrado.getEstado());
+                                JOptionPane.showMessageDialog(null, "Ordem atualizada com sucesso! Estado: " + estado);
                             }
                         } else {
                             throw new INEException("Instrumento com código " + instrumentoCodigo + " não encontrado.");
@@ -511,6 +512,7 @@ public class MyFrame extends JFrame implements ActionListener {
                 }
             }
         });
+
 
         
         inputButton.setPreferredSize(new Dimension(200, 100));
@@ -647,10 +649,8 @@ public class MyFrame extends JFrame implements ActionListener {
                 String email = emailField.getText();
 
                 try {
-                    // Verifica se existe um instrumento com o código informado
                     Cliente cliente = repositorioClientes.buscarPorEmail(email);
 
-                    // Se o instrumento for encontrado, abrir uma nova caixa de diálogo para alterar o nome
                     if (cliente != null) {
                     JTextField nomeField = new JTextField();
                     JPanel nomePanel = new JPanel(new GridLayout(2, 2));
@@ -662,21 +662,26 @@ public class MyFrame extends JFrame implements ActionListener {
 
                     if (nomeResult == JOptionPane.OK_OPTION) {
                         String novoNome = nomeField.getText();
+                        
+                        OrdemServico[] ordensArray = repositorioOrdens.listar();
+                        
+                        for (OrdemServico ordem : ordensArray) {
+                            if (ordem.getCliente() != null && ordem.getCliente().getEmail().equals(cliente.getEmail())) {
+                                ordem.getCliente().setNome(novoNome);
+                            }
+                        }
+                        repositorioOrdens.salvarOrdens(); 
 
-                        // Chama a função para alterar o nome
                         repositorioClientes.alterarNome(cliente, novoNome);
 
-                        // Mensagem de sucesso
                         JOptionPane.showMessageDialog(null, "Nome alterado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
                     }
                     }else {
                     	throw new CNEException("Cliente com e-mail " + email + " não encontrado.");
                     }
                 } catch (CNEException ex) {
-                    // Exibe mensagem de erro se o código não for encontrado
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {
-                    // Captura qualquer outra exceção
                     JOptionPane.showMessageDialog(null, "Ocorreu um erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -781,7 +786,7 @@ public class MyFrame extends JFrame implements ActionListener {
     public static void main(String[] args) {
         new MyFrame();
     }
-
+    
     
     @Override
     public void actionPerformed(ActionEvent e) {

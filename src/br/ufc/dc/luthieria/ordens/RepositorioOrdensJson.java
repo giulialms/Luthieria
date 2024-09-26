@@ -85,7 +85,7 @@ public class RepositorioOrdensJson implements IRepositorioOrdens {
         }*/
     }
 
-    private void salvarOrdens() {
+    public void salvarOrdens() {
         try (Writer writer = new FileWriter(caminhoArquivo)) {
             gson.toJson(vetorOrdens, writer);
         } catch (IOException e) {
